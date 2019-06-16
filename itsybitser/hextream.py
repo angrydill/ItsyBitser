@@ -4,7 +4,6 @@ import textwrap
 from itsybitser.asciiencoding import AsciiEncoding
 
 WRAP_BYTES_PER_LINE = 16
-HEX_RADIX = 16
 
 
 class Hextream(AsciiEncoding):
@@ -16,8 +15,7 @@ class Hextream(AsciiEncoding):
 
     def decode(self, content):
         """ Decode binary data from ASCII hexadecimal characters """
-        result = self.distill(content)
-        result = bytes([int(hex_string, HEX_RADIX) for hex_string in textwrap.wrap(result, 2)])
+        result = bytes.fromhex(self.distill(content))
         return result
 
     def distill(self, content):
