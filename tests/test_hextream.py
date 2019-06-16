@@ -59,3 +59,27 @@ def test_decode_with_prefixes():
     hextream = Hextream()
     result = hextream.decode("AB $01 0x9A \\xA9")
     assert result == b"\xab\x01\x9a\xa9"
+
+def test_distill():
+    """ strip out comments and extraneous characters """
+    hextream = Hextream()
+    result = hextream.distill("AB $01 \\x9A 0xA9FF\n#a comment\nbbcc#inlinecomment\n\tdD")
+    assert result == "AB019AA9FFBBCCDD"
+
+def test_compare_same():
+    """ compare two hextreams that are equivalent """
+    hextream = Hextream()
+    result = hextream.compare(
+        "AB $01 \\x9A 0xA9FF\n#a comment\nbbcc#inlinecomment\n\tdD",
+        "AB\\x019AA9 FF BB$CC0xDD"
+    )
+    assert result == -1
+
+def test_compare_different():
+    """ compare two hextreams that are not equivalent """
+    hextream = Hextream()
+    result = hextream.compare(
+        "AB $01 \\x9A 0xA9FF\n#a comment\nbecc#inlinecomment\n\tdD",
+        "AB\\x019AA9 FF BB$CC0xDD"
+    )
+    assert result == 11
