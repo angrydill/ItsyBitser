@@ -98,3 +98,27 @@ def test_encode_basic64_full():
     )
     assert result == "o" * 682 + "3o"
 
+def test_encode_sextet_run_empty():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_chunk(
+        b"",
+        Atomixtream.Encoding.SEXTET_RUN
+    )
+    assert result == "20"
+
+def test_encode_sextet_run():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_chunk(
+        b"\x2a" * 7,
+        Atomixtream.Encoding.SEXTET_RUN
+    )
+    assert result == "27Z"
+
+def test_encode_sextet_run_full():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_chunk(
+        b"\x3e" * 511,
+        Atomixtream.Encoding.SEXTET_RUN
+    )
+    assert result == "jon"
+

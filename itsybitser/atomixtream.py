@@ -55,6 +55,12 @@ class Atomixtream(AsciiEncoding):
                 result.append(byte & RADIX - 1)
             result = "".join([chr(byte + OFFSET) for byte in result])
 
+        elif encoding == self.Encoding.SEXTET_RUN:
+            if length:
+                result = chr(content[0] + OFFSET)
+            else:
+                result = ""
+
         result = self.__encode_header(encoding, length) + result
         return result
 
