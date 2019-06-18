@@ -2,3 +2,4 @@
 
 from .asciiencoding import AsciiEncoding
 from .hextream import Hextream
+from .atomixtream import Atomixtream

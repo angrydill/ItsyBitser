@@ -1,0 +1,82 @@
+""" Text encodes binary data, compressing where feasible """
+
+import math
+from enum import Enum
+from itsybitser.asciiencoding import AsciiEncoding
+
+OFFSET = 48
+RADIX = 64
+
+
+class Atomixtream(AsciiEncoding):
+    """ Text encodes binary data, compressing where feasible """
+
+    def __init__(self):
+        super().__init__()
+
+    def decode(self, content):
+        """ Decode binary data from Hextream (ASCII) """
+        result = None
+        return result
+
+    def encode(self, content):
+        """ Encode binary data as Hextream (ASCII) """
+        result = None
+        return result
+
+    def encode_chunk(self, content, encoding):
+        """ Encodes a byte sequence using specified encoding  """
+
+        length = len(content)
+
+        if encoding == self.Encoding.SEXTET_STREAM:
+            result = "".join([chr(byte + 48) for byte in content])
+  
+        elif encoding == self.Encoding.TRIAD_STREAM:
+            result = []
+            for i in range(0, math.ceil(length / 2)):
+                byte = content[2 * i]
+                try:
+                    byte += content[2 * i + 1] * 8
+                except IndexError:
+                    pass
+                result.append(chr(byte + 48))
+            result = "".join(result)
+
+        elif encoding == self.Encoding.BASIC64:
+            result = []
+            for i in range(0, length):
+                if not i % 3:
+                    result.append("0")
+                byte = content[i]
+                shared_byte_index = i // 3 * 4
+                result[shared_byte_index] = chr(((byte & 192) >> 2 * (3 - (i % 3))) + ord(result[shared_byte_index]))
+                result.append(chr((byte & 63) + 48))
+            result = "".join(result)
+
+        result = self.__encode_header(encoding, length) + result
+        return result
+
+    def encode_gap(self, length):
+        """ Encodes instruction for decoder to skip forward length bytes """
+        result = None
+        return result
+
+    def encode_terminus(self):
+        """ Encodes indicator that there are no more chunks to decode """
+        result = None
+        return result
+
+    class Encoding(Enum):
+        """ Indicates technique to use when encoding a chunk """
+        GAP = 0
+        OCTET_RUN = 1
+        SEXTET_RUN = 2
+        TRIAD_STREAM = 3
+        SEXTET_STREAM = 4
+        HEADER = 5
+        BASIC64 = 7
+
+    def __encode_header(self, encoding, length):
+        result = chr(encoding.value + length // 64 * 8 + 48) + chr(length % 64 + 48)
+        return result
