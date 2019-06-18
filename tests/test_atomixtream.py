@@ -90,3 +90,11 @@ def test_encode_basic64_length4():
     )
     assert result == "74WogZ3n"
 
+def test_encode_basic64_full():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_chunk(
+        b"\xff" * 511,
+        Atomixtream.Encoding.BASIC64
+    )
+    assert result == "o" * 682 + "3o"
+

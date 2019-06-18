@@ -47,12 +47,13 @@ class Atomixtream(AsciiEncoding):
             result = []
             for i in range(0, length):
                 if not i % 3:
-                    result.append(chr(OFFSET))
-                    shared_byte_index = len(result) - 1
+                    result.append(0)
+                    hi_bits_index = len(result) - 1
                 byte = content[i]
-                result[shared_byte_index] = chr(((byte & 192) >> 2 * (3 - (i % 3))) + ord(result[shared_byte_index]))
-                result.append(chr((byte & 63) + OFFSET))
-            result = "".join(result)
+                hi_bits_shift = 2 * (3 - i % 3)
+                result[hi_bits_index] += (byte & 192) >> hi_bits_shift
+                result.append(byte & RADIX - 1)
+            result = "".join([chr(byte + OFFSET) for byte in result])
 
         result = self.__encode_header(encoding, length) + result
         return result
