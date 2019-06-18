@@ -146,3 +146,18 @@ def test_encode_octet_run_maximal():
     )
     assert result == "io3M"
 
+def test_encode_gap_empty():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_gap(0)
+    assert result == "00"
+
+def test_encode_gap():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_gap(7)
+    assert result == "07"
+
+def test_encode_gap_maximal():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_gap(511)
+    assert result == "ho"
+

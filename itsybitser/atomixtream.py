@@ -71,7 +71,7 @@ class Atomixtream(AsciiEncoding):
 
     def encode_gap(self, length):
         """ Encodes instruction for decoder to skip forward length bytes """
-        result = None
+        result = self.__encode_header(self.Encoding.GAP, length)
         return result
 
     def encode_terminus(self):
