@@ -161,3 +161,8 @@ def test_encode_gap_maximal():
     result = atomixtream.encode_gap(511)
     assert result == "ho"
 
+def test_encode_terminus():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_terminus()
+    assert result == "00"
+

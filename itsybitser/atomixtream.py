@@ -76,7 +76,7 @@ class Atomixtream(AsciiEncoding):
 
     def encode_terminus(self):
         """ Encodes indicator that there are no more chunks to decode """
-        result = None
+        result = "00"
         return result
 
     class Encoding(Enum):
@@ -90,5 +90,5 @@ class Atomixtream(AsciiEncoding):
         BASIC64 = 7
 
     def __encode_header(self, encoding, length):
-        result = chr(encoding.value + length // RADIX * 8 + OFFSET) + chr(length % RADIX + OFFSET)
+        result = chr(encoding.value + length // RADIX * 8 + OFFSET) + chr((length & (RADIX - 1)) + OFFSET)
         return result
