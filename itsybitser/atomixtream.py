@@ -1,6 +1,5 @@
 """ Text encodes binary data, compressing where feasible """
 
-import math
 from enum import Enum
 from itsybitser.asciiencoding import AsciiEncoding
 
@@ -58,6 +57,12 @@ class Atomixtream(AsciiEncoding):
         elif encoding == self.Encoding.SEXTET_RUN:
             if length:
                 result = chr(content[0] + OFFSET)
+            else:
+                result = ""
+
+        elif encoding == self.Encoding.OCTET_RUN:
+            if length:
+                result = chr(content[0] // RADIX + OFFSET) + chr((content[0] & (RADIX - 1)) + OFFSET)
             else:
                 result = ""
 

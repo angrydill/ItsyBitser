@@ -18,7 +18,7 @@ def test_encode_sextet_stream_empty():
     )
     assert result == "40"
 
-def test_encode_sextet_stream_full():
+def test_encode_sextet_stream_maximal():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"\x2a" * 511,
@@ -42,7 +42,7 @@ def test_encode_triad_stream_empty():
     )
     assert result == "30"
 
-def test_encode_triad_stream_full():
+def test_encode_triad_stream_maximal():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"\x01" * 511,
@@ -90,7 +90,7 @@ def test_encode_basic64_length4():
     )
     assert result == "74WogZ3n"
 
-def test_encode_basic64_full():
+def test_encode_basic64_maximal():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"\xff" * 511,
@@ -114,11 +114,35 @@ def test_encode_sextet_run():
     )
     assert result == "27Z"
 
-def test_encode_sextet_run_full():
+def test_encode_sextet_run_maximal():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"\x3e" * 511,
         Atomixtream.Encoding.SEXTET_RUN
     )
     assert result == "jon"
+
+def test_encode_octet_run_empty():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_chunk(
+        b"",
+        Atomixtream.Encoding.OCTET_RUN
+    )
+    assert result == "10"
+
+def test_encode_octet_run():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_chunk(
+        b"\xfa" * 7,
+        Atomixtream.Encoding.OCTET_RUN
+    )
+    assert result == "173j"
+
+def test_encode_octet_run_maximal():
+    atomixtream = Atomixtream()
+    result = atomixtream.encode_chunk(
+        b"\xdd" * 511,
+        Atomixtream.Encoding.OCTET_RUN
+    )
+    assert result == "io3M"
 
