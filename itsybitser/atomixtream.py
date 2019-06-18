@@ -34,7 +34,7 @@ class Atomixtream(AsciiEncoding):
   
         elif encoding == self.Encoding.TRIAD_STREAM:
             result = []
-            for i in range(0, math.ceil(length / 2)):
+            for i in range(0, (length + 1) // 2):
                 byte = content[2 * i]
                 try:
                     byte += content[2 * i + 1] * 8
