@@ -30,7 +30,7 @@ class Atomixtream(AsciiEncoding):
         length = len(content)
 
         if encoding == self.Encoding.SEXTET_STREAM:
-            result = "".join([chr(byte + 48) for byte in content])
+            result = "".join([chr(byte + OFFSET) for byte in content])
   
         elif encoding == self.Encoding.TRIAD_STREAM:
             result = []
@@ -40,18 +40,18 @@ class Atomixtream(AsciiEncoding):
                     byte += content[2 * i + 1] * 8
                 except IndexError:
                     pass
-                result.append(chr(byte + 48))
+                result.append(chr(byte + OFFSET))
             result = "".join(result)
 
         elif encoding == self.Encoding.BASIC64:
             result = []
             for i in range(0, length):
                 if not i % 3:
-                    result.append("0")
+                    result.append(chr(OFFSET))
+                    shared_byte_index = len(result) - 1
                 byte = content[i]
-                shared_byte_index = i // 3 * 4
                 result[shared_byte_index] = chr(((byte & 192) >> 2 * (3 - (i % 3))) + ord(result[shared_byte_index]))
-                result.append(chr((byte & 63) + 48))
+                result.append(chr((byte & 63) + OFFSET))
             result = "".join(result)
 
         result = self.__encode_header(encoding, length) + result
@@ -78,5 +78,5 @@ class Atomixtream(AsciiEncoding):
         BASIC64 = 7
 
     def __encode_header(self, encoding, length):
-        result = chr(encoding.value + length // 64 * 8 + 48) + chr(length % 64 + 48)
+        result = chr(encoding.value + length // RADIX * 8 + OFFSET) + chr(length % RADIX + OFFSET)
         return result
