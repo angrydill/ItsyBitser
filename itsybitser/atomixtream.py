@@ -1,16 +1,16 @@
-""" Text encodes binary data, compressing where feasible """
+""" Text-encodes binary data, compressing where feasible """
 
 from enum import Enum
 from itsybitser.asciiencoding import AsciiEncoding
 
 OFFSET = 48
 RADIX = 64
-SIX_BIT_MASK = 0b00111111
+SEXTET_MASK = 0b00111111
 HI_BITS_MASK = 0b11000000
 
 
 class Atomixtream(AsciiEncoding):
-    """ Text encodes binary data, compressing where feasible """
+    """ Text-encodes binary data, compressing where feasible """
 
     def __init__(self):
         super().__init__()
@@ -34,21 +34,8 @@ class Atomixtream(AsciiEncoding):
 
     def encode_chunk(self, content, encoding):
         """ Encodes a byte sequence using specified encoding  """
-
-        length = len(content)
-
-        if encoding == self.Encoding.SEXTET_STREAM:
-            result = self.__encode_sextet_stream(content)
-        elif encoding == self.Encoding.TRIAD_STREAM:
-            result = self.__encode_triad_stream(content)
-        elif encoding == self.Encoding.BASIC64:
-            result = self.__encode_basic64(content)
-        elif encoding == self.Encoding.SEXTET_RUN:
-            result = self.__encode_sextet_run(content)
-        elif encoding == self.Encoding.OCTET_RUN:
-            result = self.__encode_octet_run(content)
-
-        result = self.__encode_header(encoding, length) + result
+        result = self.encoders[encoding](content)
+        result = self.__encode_header(encoding, len(content)) + result
         return result
 
     def encode_gap(self, length):
@@ -75,15 +62,14 @@ class Atomixtream(AsciiEncoding):
     @staticmethod
     def __encode_basic64(content):
         result = []
-        length = len(content)
-        for i in range(0, length):
-            if not i % 3:
+        for content_index, byte in enumerate(content):
+            triplet_position = content_index % 3
+            if not triplet_position:
                 result.append(0)
                 hi_bits_index = len(result) - 1
-            byte = content[i]
-            hi_bits_shift = 2 * (3 - i % 3)
+            hi_bits_shift = 2 * (3 - triplet_position)
             result[hi_bits_index] += (byte & HI_BITS_MASK) >> hi_bits_shift
-            result.append(byte & SIX_BIT_MASK)
+            result.append(byte & SEXTET_MASK)
         result = "".join([chr(byte + OFFSET) for byte in result])
         return result
 
@@ -91,17 +77,16 @@ class Atomixtream(AsciiEncoding):
     def __encode_header(encoding, length):
         result = (
             chr(encoding.value + length // RADIX * 8 + OFFSET) +
-            chr((length & SIX_BIT_MASK) + OFFSET)
+            chr((length & SEXTET_MASK) + OFFSET)
         )
         return result
 
     @staticmethod
     def __encode_octet_run(content):
-        length = len(content)
-        if length:
+        if content:
             result = (
                 chr(content[0] // RADIX + OFFSET) +
-                chr((content[0] & SIX_BIT_MASK) + OFFSET)
+                chr((content[0] & SEXTET_MASK) + OFFSET)
             )
         else:
             result = ""
@@ -109,8 +94,7 @@ class Atomixtream(AsciiEncoding):
 
     @staticmethod
     def __encode_sextet_run(content):
-        length = len(content)
-        if length:
+        if content:
             result = chr(content[0] + OFFSET)
         else:
             result = ""
@@ -123,9 +107,8 @@ class Atomixtream(AsciiEncoding):
 
     @staticmethod
     def __encode_triad_stream(content):
-        length = len(content)
         result = []
-        for i in range(0, (length + 1) // 2):
+        for i in range(0, (len(content) + 1) // 2):
             index = 2 * i
             byte = content[index]
             try:
