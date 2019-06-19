@@ -15,7 +15,7 @@ class Atomixtream(AsciiEncoding):
     def __init__(self):
         super().__init__()
         self.encoders = {
-            self.Encoding.BASIC64: self.__encode_basic64,
+            self.Encoding.LINEAR64: self.__encode_linear64,
             self.Encoding.OCTET_RUN: self.__encode_octet_run,
             self.Encoding.SEXTET_RUN: self.__encode_sextet_run,
             self.Encoding.SEXTET_STREAM: self.__encode_sextet_stream,
@@ -57,10 +57,10 @@ class Atomixtream(AsciiEncoding):
         TRIAD_STREAM = 3
         SEXTET_STREAM = 4
         HEADER = 5
-        BASIC64 = 7
+        LINEAR64 = 7
 
     @staticmethod
-    def __encode_basic64(content):
+    def __encode_linear64(content):
         result = []
         for content_index, byte in enumerate(content):
             triplet_position = content_index % 3

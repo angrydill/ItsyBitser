@@ -50,51 +50,51 @@ def test_encode_triad_stream_maximal():
     )
     assert result == "ko" + ("9" * 255) + "1"
 
-def test_encode_basic64_empty():
+def test_encode_linear64_empty():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"",
-        Atomixtream.Encoding.BASIC64
+        Atomixtream.Encoding.LINEAR64
     )
     assert result == "70"
 
-def test_encode_basic64_length1():
+def test_encode_linear64_length1():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"\xff",
-        Atomixtream.Encoding.BASIC64
+        Atomixtream.Encoding.LINEAR64
     )
     assert result == "713o"
 
-def test_encode_basic64_length2():
+def test_encode_linear64_length2():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"\xff\x77",
-        Atomixtream.Encoding.BASIC64
+        Atomixtream.Encoding.LINEAR64
     )
     assert result == "727og"
 
-def test_encode_basic64_length3():
+def test_encode_linear64_length3():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"\xff\x77\xaa",
-        Atomixtream.Encoding.BASIC64
+        Atomixtream.Encoding.LINEAR64
     )
     assert result == "73WogZ"
 
-def test_encode_basic64_length4():
+def test_encode_linear64_length4():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"\xff\x77\xaa\xfe",
-        Atomixtream.Encoding.BASIC64
+        Atomixtream.Encoding.LINEAR64
     )
     assert result == "74WogZ3n"
 
-def test_encode_basic64_maximal():
+def test_encode_linear64_maximal():
     atomixtream = Atomixtream()
     result = atomixtream.encode_chunk(
         b"\xff" * 511,
-        Atomixtream.Encoding.BASIC64
+        Atomixtream.Encoding.LINEAR64
     )
     assert result == "o" * 682 + "3o"
 
