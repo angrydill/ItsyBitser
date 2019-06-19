@@ -108,8 +108,7 @@ class Atomixtream(AsciiEncoding):
     @staticmethod
     def __encode_triad_stream(content):
         result = []
-        for i in range(0, (len(content) + 1) // 2):
-            index = 2 * i
+        for index in range(0, len(content), 2):
             byte = content[index]
             try:
                 byte += content[index + 1] << 3
