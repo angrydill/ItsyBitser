@@ -6,10 +6,11 @@ from itsybitser.asciiencoding import AsciiEncoding
 OFFSET = 48
 RADIX = 64
 SEXTET_MASK = 0b00111111
-HI_BITS_MASK = 0b11000000
+HIGH_BITS_MASK = 0b11000000
+GROUP_LENGTH = 3
 
 
-class Atomixtream(AsciiEncoding):
+class VariPacker(AsciiEncoding):
     """ Text-encodes binary data, compressing where feasible """
 
     def __init__(self):
@@ -63,12 +64,12 @@ class Atomixtream(AsciiEncoding):
     def __encode_linear64(content):
         result = []
         for content_index, byte in enumerate(content):
-            triplet_position = content_index % 3
-            if not triplet_position:
+            group_position = content_index % GROUP_LENGTH
+            if not group_position:
+                high_bits_index = len(result)
                 result.append(0)
-                hi_bits_index = len(result) - 1
-            hi_bits_shift = 2 * (3 - triplet_position)
-            result[hi_bits_index] += (byte & HI_BITS_MASK) >> hi_bits_shift
+            high_bits_shift = 2 * (GROUP_LENGTH - group_position)
+            result[high_bits_index] += (byte & HIGH_BITS_MASK) >> high_bits_shift
             result.append(byte & SEXTET_MASK)
         result = "".join([chr(byte + OFFSET) for byte in result])
         return result
