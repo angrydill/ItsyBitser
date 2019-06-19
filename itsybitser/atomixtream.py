@@ -5,6 +5,8 @@ from itsybitser.asciiencoding import AsciiEncoding
 
 OFFSET = 48
 RADIX = 64
+SIX_BIT_MASK = 0b00111111
+HI_BITS_MASK = 0b11000000
 
 
 class Atomixtream(AsciiEncoding):
@@ -30,13 +32,14 @@ class Atomixtream(AsciiEncoding):
 
         if encoding == self.Encoding.SEXTET_STREAM:
             result = "".join([chr(byte + OFFSET) for byte in content])
-  
+
         elif encoding == self.Encoding.TRIAD_STREAM:
             result = []
             for i in range(0, (length + 1) // 2):
-                byte = content[2 * i]
+                index = 2 * i
+                byte = content[index]
                 try:
-                    byte += content[2 * i + 1] * 8
+                    byte += content[index + 1] << 3
                 except IndexError:
                     pass
                 result.append(chr(byte + OFFSET))
@@ -50,8 +53,8 @@ class Atomixtream(AsciiEncoding):
                     hi_bits_index = len(result) - 1
                 byte = content[i]
                 hi_bits_shift = 2 * (3 - i % 3)
-                result[hi_bits_index] += (byte & 192) >> hi_bits_shift
-                result.append(byte & RADIX - 1)
+                result[hi_bits_index] += (byte & HI_BITS_MASK) >> hi_bits_shift
+                result.append(byte & SIX_BIT_MASK)
             result = "".join([chr(byte + OFFSET) for byte in result])
 
         elif encoding == self.Encoding.SEXTET_RUN:
@@ -62,7 +65,10 @@ class Atomixtream(AsciiEncoding):
 
         elif encoding == self.Encoding.OCTET_RUN:
             if length:
-                result = chr(content[0] // RADIX + OFFSET) + chr((content[0] & (RADIX - 1)) + OFFSET)
+                result = (
+                    chr(content[0] // RADIX + OFFSET) +
+                    chr((content[0] & SIX_BIT_MASK) + OFFSET)
+                )
             else:
                 result = ""
 
@@ -74,7 +80,8 @@ class Atomixtream(AsciiEncoding):
         result = self.__encode_header(self.Encoding.GAP, length)
         return result
 
-    def encode_terminus(self):
+    @staticmethod
+    def encode_terminus():
         """ Encodes indicator that there are no more chunks to decode """
         result = "00"
         return result
@@ -89,6 +96,10 @@ class Atomixtream(AsciiEncoding):
         HEADER = 5
         BASIC64 = 7
 
-    def __encode_header(self, encoding, length):
-        result = chr(encoding.value + length // RADIX * 8 + OFFSET) + chr((length & (RADIX - 1)) + OFFSET)
+    @staticmethod
+    def __encode_header(encoding, length):
+        result = (
+            chr(encoding.value + length // RADIX * 8 + OFFSET) +
+            chr((length & SIX_BIT_MASK) + OFFSET)
+        )
         return result
