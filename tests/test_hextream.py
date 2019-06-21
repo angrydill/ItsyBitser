@@ -1,28 +1,24 @@
 """ Unit Tests for class Hextream """
 
-from itsybitser import Hextream
+from itsybitser import hextream
 
 def test_encode_empty():
     """ encode empty bytes sequence """
-    hextream = Hextream()
     result = hextream.encode(b"")
     assert result == ""
 
 def test_encode_single_byte():
     """ encode one byte sequence """
-    hextream = Hextream()
     result = hextream.encode(b"\xab")
     assert result == "AB"
 
 def test_encode_multiple_bytes():
     """ encode several byte sequence """
-    hextream = Hextream()
     result = hextream.encode(b"\xab\x01\x9a\xa9\xff")
     assert result == "AB 01 9A A9 FF"
 
 def test_encode_long_sequence():
     """ encode byte sequence long enough for output to wrap """
-    hextream = Hextream()
     result = hextream.encode(bytes(range(0, 40)))
     assert result == (
         "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F\n" +
@@ -32,43 +28,36 @@ def test_encode_long_sequence():
 
 def test_decode_empty():
     """ decode empty bytes sequence """
-    hextream = Hextream()
     result = hextream.decode("")
     assert result == b""
 
 def test_decode_single_byte():
     """ decode one byte sequence """
-    hextream = Hextream()
     result = hextream.decode("AB")
     assert result == b"\xab"
 
 def test_decode_multiple_bytes():
     """ decode several byte sequence """
-    hextream = Hextream()
     result = hextream.decode("AB019AA9FF")
     assert result == b"\xab\x01\x9a\xa9\xff"
 
 def test_decode_comments_whitespace():
     """ decode byte sequence from hextream w/comments and whitespace """
-    hextream = Hextream()
     result = hextream.decode("AB 01 9A A9FF\n#a comment\nbbcc#inlinecomment\n\tdD")
     assert result == b"\xab\x01\x9a\xa9\xff\xbb\xcc\xdd"
 
 def test_decode_with_prefixes():
     """ decode byte sequence from hextream with common hex prefix characters """
-    hextream = Hextream()
     result = hextream.decode("AB $01 0x9A \\xA9")
     assert result == b"\xab\x01\x9a\xa9"
 
 def test_distill():
     """ strip out comments and extraneous characters """
-    hextream = Hextream()
     result = hextream.distill("AB $01 \\x9A 0xA9FF\n#a comment\nbbcc#inlinecomment\n\tdD")
     assert result == "AB019AA9FFBBCCDD"
 
 def test_compare_same():
     """ compare two hextreams that are equivalent """
-    hextream = Hextream()
     result = hextream.compare(
         "AB $01 \\x9A 0xA9FF\n#a comment\nbbcc#inlinecomment\n\tdD",
         "AB\\x019AA9 FF BB$CC0xDD"
@@ -77,7 +66,6 @@ def test_compare_same():
 
 def test_compare_different():
     """ compare two hextreams that are not equivalent """
-    hextream = Hextream()
     result = hextream.compare(
         "AB $01 \\x9A 0xA9FF\n#a comment\nbecc#inlinecomment\n\tdD",
         "AB\\x019AA9 FF BB$CC0xDD"
