@@ -244,3 +244,15 @@ def test_distill_comments():
     clean_content = varipacker.encode(bytes(range(0,100)))
     dirty_content = "#comment1\n" + clean_content[:40] + "# coment 2 \r\n" + clean_content[40:]
     assert varipacker.distill(dirty_content) == clean_content
+
+def test_compare_same():
+    clean_content = varipacker.encode(bytes(range(0,100)))
+    content1 = clean_content[:20] + " " + clean_content[20:30] + "\r\n" + clean_content[30:]
+    content2 = "#comment1\n" + clean_content[:40] + "# coment 2 \r\n" + clean_content[40:]
+    assert varipacker.compare(content1, content2) == -1
+
+def test_compare_different():
+    clean_content = varipacker.encode(bytes(range(0,100)))
+    content1 = clean_content[:20] + "Z " + clean_content[20:30] + "\r\n" + clean_content[30:]
+    content2 = "#comment1\n" + clean_content[:40] + "# coment 2 \r\n" + clean_content[40:]
+    assert varipacker.compare(content1, content2) == 20

@@ -33,9 +33,7 @@ def compare(content1, content2):
     - if they are the same, will return -1
     - if they differ, will return the (0-based) index of the
       first character where they differ """
-    # TODO write tests and instate
-    #return asciiencoding.compare(distill(content1), distill(content2))
-    return None
+    return asciiencoding.compare(distill(content1), distill(content2))
 
 def decode(content):
     """ Decode binary data from VariPacker content (ASCII) """
