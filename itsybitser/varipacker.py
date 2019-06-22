@@ -52,7 +52,7 @@ def encode(content):
     source_buffer = [byte for byte in content]
     source_buffer.append(None)   # Sentinal
 
-    for encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.LINEAR64):
+    for encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.TRIAD_STREAM, Encoding.LINEAR64):
         run_encoding = False
         if encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN):
             run_encoding = True
@@ -84,6 +84,7 @@ def encode(content):
                 chunk_finished = len(source_chunk) >= 511
             if chunk_finished:
                 chunk_length = len(source_chunk)
+                # TODO consider pre-switch (2) and post-swith (2) overhead as negative modifiers to min viable length
                 if chunk_length >= min_viable_length:
                     source_chunk = b"".join([bytes([byte]) for byte in source_chunk])
                     encoded_chunks[start_index] = encode_chunk(source_chunk, encoding)
