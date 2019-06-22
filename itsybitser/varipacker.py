@@ -21,15 +21,66 @@ class Encoding(Enum):
     LINEAR64 = 7
 
 
+def compare(content1, content2):
+    """ Compares two VariPacker strings
+
+    This compares two VariPacker strings, while ignoring any whitespace
+    characters (space, tab, carriage return, line feed, form feed, or
+    vertical tab), and any comments (character sequences starting with
+    "#" and extending to the end-of-line.
+
+    - if they are the same, will return -1
+    - if they differ, will return the (0-based) index of the
+      first character where they differ """
+    #return asciiencoding.compare(distill(content1), distill(content2))
+    return None
+
 def decode(content):
-    """ Decode binary data from Hextream (ASCII) """
+    """ Decode binary data from VariPacker content (ASCII) """
     result = None
     return result
 
+def distill(content):
+    """ Strip out comments and whitespace from VariPacker content """
+    #return asciiencoding.distill(content)
+    return None
+
 def encode(content):
-    """ Encode binary data as Hextream (ASCII) """
-    result = None
-    return result
+    """ Encode binary content in VariPacker format (ASCII) """
+
+    encoded_chunks = {}
+    source_buffer = [byte for byte in content]
+    source_buffer.append(None)   # Sentinal
+
+    for encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.LINEAR64):
+        run_encoding = False
+        if encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN):
+            run_encoding = True
+        value_limit = 0xff
+        if encoding == Encoding.SEXTET_RUN:
+            value_limit = 0x3f
+        source_chunk = []
+        start_index = 0
+        chunk_finished = False
+        for index, byte in enumerate(source_buffer):
+            if byte is None or byte > value_limit:
+                chunk_finished = True
+            elif run_encoding and source_chunk and byte != source_chunk[-1]:
+                chunk_finished = True
+            else:
+                source_chunk.append(byte)
+                chunk_finished = len(source_chunk) >= 511
+            if chunk_finished:
+                chunk_length = len(source_chunk)
+                if chunk_length >= 6 or (source_chunk and encoding == Encoding.LINEAR64):
+                    source_chunk = b"".join([bytes([byte]) for byte in source_chunk])
+                    encoded_chunks[start_index] = encode_chunk(source_chunk, encoding)
+                    source_buffer[start_index:start_index + chunk_length] = [None] * chunk_length
+                start_index = index + 1
+                source_chunk = []
+                chunk_finished = False
+    result = "".join([chunk for (_, chunk) in sorted(encoded_chunks.items())])
+    return result + encode_terminus()
 
 def encode_chunk(content, encoding):
     """ Encodes a byte sequence using specified encoding  """

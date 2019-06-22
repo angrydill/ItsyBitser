@@ -144,3 +144,51 @@ def test_encode_terminus():
     result = varipacker.encode_terminus()
     assert result == "00"
 
+def test_encode_empty():
+    result = varipacker.encode(b"")
+    assert result == varipacker.encode_terminus()
+
+def test_encode_all_linear64_single_chunk():
+    content = (b"\x40\x00\x00\x40" * 127) + b"\x40\x00\x00"
+    result = varipacker.encode(content)
+    assert result == "".join([
+        varipacker.encode_chunk(content, varipacker.Encoding.LINEAR64),
+        varipacker.encode_terminus()
+    ])
+
+def test_encode_all_linear64_double_chunk():
+    content = ((b"\x40\x00\x00\x40" * 127) + b"\x40\x00\x00") * 2
+    result = varipacker.encode(content)
+    assert result == "".join([
+        varipacker.encode_chunk(content[0:511], varipacker.Encoding.LINEAR64),
+        varipacker.encode_chunk(content[0:511], varipacker.Encoding.LINEAR64),
+        varipacker.encode_terminus()
+    ])
+
+def test_encode_all_sextet_run_single_chunk():
+    content = b"\x39" * 511
+    result = varipacker.encode(content)
+    assert result == "".join([
+        varipacker.encode_chunk(content, varipacker.Encoding.SEXTET_RUN),
+        varipacker.encode_terminus()
+    ])
+
+def test_encode_all_sextet_run_double_chunk():
+    content = b"\x39" * 1022
+    result = varipacker.encode(content)
+    assert result == "".join([
+        varipacker.encode_chunk(content[0:511], varipacker.Encoding.SEXTET_RUN),
+        varipacker.encode_chunk(content[0:511], varipacker.Encoding.SEXTET_RUN),
+        varipacker.encode_terminus()
+    ])
+
+def test_encode_alternating_sextet_octet_run():
+    content = (b"\x39" * 10) + (b"\x40" * 10) + (b"\x39" * 10) + (b"\x40" * 10)
+    result = varipacker.encode(content)
+    assert result == "".join([
+        varipacker.encode_chunk(b"\x39" * 10, varipacker.Encoding.SEXTET_RUN),
+        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
+        varipacker.encode_chunk(b"\x39" * 10, varipacker.Encoding.SEXTET_RUN),
+        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
+        varipacker.encode_terminus()
+    ])
