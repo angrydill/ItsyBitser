@@ -219,3 +219,18 @@ def test_encode_all_but_sextet_stream():
         varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
         varipacker.encode_terminus()
     ])
+
+def test_encode_all():
+    content = b"\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e" + (b"\x39" * 10) + b"\x61\x62\x01\x02\x03\x04\x05\x06" + (b"\x40" * 10) + b"\x77" +  (b"\x39" * 10) + (b"\x40" * 10)
+    result = varipacker.encode(content)
+    assert result == "".join([
+        varipacker.encode_chunk(b"\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e", varipacker.Encoding.SEXTET_STREAM),
+        varipacker.encode_chunk(b"\x39" * 10, varipacker.Encoding.SEXTET_RUN),
+        varipacker.encode_chunk(b"\x61\x62", varipacker.Encoding.LINEAR64),
+        varipacker.encode_chunk(b"\x01\x02\x03\x04\x05\x06", varipacker.Encoding.TRIAD_STREAM),
+        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
+        varipacker.encode_chunk(b"\x77", varipacker.Encoding.LINEAR64),
+        varipacker.encode_chunk(b"\x39" * 10, varipacker.Encoding.SEXTET_RUN),
+        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
+        varipacker.encode_terminus()
+    ])

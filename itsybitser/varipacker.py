@@ -52,7 +52,7 @@ def encode(content):
     source_buffer = [byte for byte in content]
     source_buffer.append(None)   # Sentinal
 
-    for encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.TRIAD_STREAM, Encoding.LINEAR64):
+    for encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.TRIAD_STREAM, Encoding.SEXTET_STREAM, Encoding.LINEAR64):
         run_encoding = False
         if encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN):
             run_encoding = True
