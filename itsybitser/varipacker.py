@@ -56,9 +56,21 @@ def encode(content):
         run_encoding = False
         if encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN):
             run_encoding = True
+
         value_limit = 0xff
-        if encoding == Encoding.SEXTET_RUN:
+        if encoding in (Encoding.SEXTET_RUN, Encoding.SEXTET_STREAM):
             value_limit = 0x3f
+        elif encoding == Encoding.TRIAD_STREAM:
+            value_limit = 0x0f
+
+        min_viable_length = 6
+        if encoding == Encoding.OCTET_RUN:
+            min_viable_length = 7
+        elif encoding == Encoding.LINEAR64:
+            min_viable_length = 1
+        elif encoding == Encoding.SEXTET_STREAM:
+            min_viable_length = 14
+
         source_chunk = []
         start_index = 0
         chunk_finished = False
@@ -72,7 +84,7 @@ def encode(content):
                 chunk_finished = len(source_chunk) >= 511
             if chunk_finished:
                 chunk_length = len(source_chunk)
-                if chunk_length >= 6 or (source_chunk and encoding == Encoding.LINEAR64):
+                if chunk_length >= min_viable_length:
                     source_chunk = b"".join([bytes([byte]) for byte in source_chunk])
                     encoded_chunks[start_index] = encode_chunk(source_chunk, encoding)
                     source_buffer[start_index:start_index + chunk_length] = [None] * chunk_length
