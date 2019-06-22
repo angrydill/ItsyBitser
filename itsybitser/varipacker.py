@@ -32,28 +32,39 @@ def compare(content1, content2):
     - if they are the same, will return -1
     - if they differ, will return the (0-based) index of the
       first character where they differ """
+    # TODO write tests and instate
     #return asciiencoding.compare(distill(content1), distill(content2))
     return None
 
 def decode(content):
     """ Decode binary data from VariPacker content (ASCII) """
+    # TODO write tests and implement
     result = None
     return result
 
 def distill(content):
     """ Strip out comments and whitespace from VariPacker content """
+    # TODO write tests and instate
     #return asciiencoding.distill(content)
     return None
 
 def encode(content):
     """ Encode binary content in VariPacker format (ASCII) """
 
+    # TODO optimize, then refactor
     encoded_chunks = {}
     source_buffer = [byte for byte in content]
     source_buffer.append(None)   # Sentinal
 
     for encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.TRIAD_STREAM, Encoding.SEXTET_STREAM, Encoding.LINEAR64):
-        run_encoding = False
+        value_limit, min_viable_length, run_encoding = {
+            Encoding.LINEAR64:      (0xff,  1, False),
+            Encoding.OCTET_RUN:     (0xff,  7, True),
+            Encoding.SEXTET_RUN:    (0x3f,  6, True),
+            Encoding.SEXTET_STREAM: (0x3f, 14, False),
+            Encoding.TRIAD_STREAM:  (0x0f,  6, False)
+        }[encoding]
+        """run_encoding = False
         if encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN):
             run_encoding = True
 
@@ -70,6 +81,7 @@ def encode(content):
             min_viable_length = 1
         elif encoding == Encoding.SEXTET_STREAM:
             min_viable_length = 14
+        """
 
         source_chunk = []
         start_index = 0
