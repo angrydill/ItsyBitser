@@ -45,9 +45,7 @@ def decode(content):
 
 def distill(content):
     """ Strip out comments and whitespace from VariPacker content """
-    # TODO write tests and instate
-    #return asciiencoding.distill(content)
-    return None
+    return asciiencoding.distill(content)
 
 def encode(content):
     """ Encode binary content in VariPacker format (ASCII) """
@@ -66,7 +64,7 @@ def encode(content):
             Encoding.OCTET_RUN: (0xff, 7, True),
             Encoding.SEXTET_RUN: (0x3f, 6, True),
             Encoding.SEXTET_STREAM: (0x3f, 14, False),
-            Encoding.TRIAD_STREAM: (0x0f, 6, False)
+            Encoding.TRIAD_STREAM: (0x07, 6, False)
         }[encoding]
 
         source_chunk = []

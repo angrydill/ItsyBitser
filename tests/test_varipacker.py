@@ -234,3 +234,13 @@ def test_encode_all():
         varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
         varipacker.encode_terminus()
     ])
+
+def test_distill_whitespace():
+    clean_content = varipacker.encode(bytes(range(0,100)))
+    dirty_content = clean_content[:20] + " " + clean_content[20:30] + "\r\n" + clean_content[30:]
+    assert varipacker.distill(dirty_content) == clean_content
+
+def test_distill_comments():
+    clean_content = varipacker.encode(bytes(range(0,100)))
+    dirty_content = "#comment1\n" + clean_content[:40] + "# coment 2 \r\n" + clean_content[40:]
+    assert varipacker.distill(dirty_content) == clean_content
