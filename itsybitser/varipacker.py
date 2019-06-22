@@ -8,6 +8,7 @@ RADIX = 64
 SEXTET_MASK = 0b00111111
 HIGH_BITS_MASK = 0b11000000
 GROUP_LENGTH = 3
+MAX_CHUNK_LENGTH = 511
 
 
 class Encoding(Enum):
@@ -56,50 +57,40 @@ def encode(content):
     source_buffer = [byte for byte in content]
     source_buffer.append(None)   # Sentinal
 
-    for encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.TRIAD_STREAM, Encoding.SEXTET_STREAM, Encoding.LINEAR64):
-        value_limit, min_viable_length, run_encoding = {
-            Encoding.LINEAR64:      (0xff,  1, False),
-            Encoding.OCTET_RUN:     (0xff,  7, True),
-            Encoding.SEXTET_RUN:    (0x3f,  6, True),
+    for encoding in (
+            Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.TRIAD_STREAM,
+            Encoding.SEXTET_STREAM, Encoding.LINEAR64
+        ):
+        value_limit, min_viable_length, is_run_encoding = {
+            Encoding.LINEAR64: (0xff, 1, False),
+            Encoding.OCTET_RUN: (0xff, 7, True),
+            Encoding.SEXTET_RUN: (0x3f, 6, True),
             Encoding.SEXTET_STREAM: (0x3f, 14, False),
-            Encoding.TRIAD_STREAM:  (0x0f,  6, False)
+            Encoding.TRIAD_STREAM: (0x0f, 6, False)
         }[encoding]
-        """run_encoding = False
-        if encoding in (Encoding.SEXTET_RUN, Encoding.OCTET_RUN):
-            run_encoding = True
-
-        value_limit = 0xff
-        if encoding in (Encoding.SEXTET_RUN, Encoding.SEXTET_STREAM):
-            value_limit = 0x3f
-        elif encoding == Encoding.TRIAD_STREAM:
-            value_limit = 0x0f
-
-        min_viable_length = 6
-        if encoding == Encoding.OCTET_RUN:
-            min_viable_length = 7
-        elif encoding == Encoding.LINEAR64:
-            min_viable_length = 1
-        elif encoding == Encoding.SEXTET_STREAM:
-            min_viable_length = 14
-        """
 
         source_chunk = []
         start_index = 0
         chunk_finished = False
+
         for index, byte in enumerate(source_buffer):
             if byte is None or byte > value_limit:
                 chunk_finished = True
-            elif run_encoding and source_chunk and byte != source_chunk[-1]:
+            # If this is different from the last byte then the run is done
+            elif is_run_encoding and source_chunk and byte != source_chunk[-1]:
                 chunk_finished = True
             else:
                 source_chunk.append(byte)
-                chunk_finished = len(source_chunk) >= 511
+                chunk_finished = len(source_chunk) >= MAX_CHUNK_LENGTH
             if chunk_finished:
                 chunk_length = len(source_chunk)
-                # TODO consider pre-switch (2) and post-swith (2) overhead as negative modifiers to min viable length
+                # TODO consider pre-switch (2) and post-swith (2) overhead
+                # as negative modifiers to min viable length
                 if chunk_length >= min_viable_length:
                     source_chunk = b"".join([bytes([byte]) for byte in source_chunk])
                     encoded_chunks[start_index] = encode_chunk(source_chunk, encoding)
+                    # Fill region of the chunk in the buffer with Nones, so it
+                    # doesn't get encoded on the next pass
                     source_buffer[start_index:start_index + chunk_length] = [None] * chunk_length
                 start_index = index + 1
                 source_chunk = []
