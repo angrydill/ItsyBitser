@@ -5,9 +5,11 @@ from itsybitser import asciiencoding
 
 OFFSET = 48
 RADIX = 64
-SEXTET_MASK = 0b00111111
 HIGH_BITS_MASK = 0b11000000
-GROUP_LENGTH = 3
+SEXTET_MASK = 0b00111111
+HIGH_TRIAD_MASK = 0b00111000
+LOW_TRIAD_MASK = 0b00000111
+LINEAR64_GROUP_LENGTH = 3
 MAX_CHUNK_LENGTH = 511
 
 
@@ -38,8 +40,51 @@ def compare(content1, content2):
 def decode(content):
     """ Decode binary data from VariPacker content (ASCII) """
     # TODO write tests and implement
-    result = None
-    return result
+
+    encoding_properties = {
+        #             (encoding, cycle length, is run encoding)
+        Encoding.GAP: (Encoding.GAP, 1, False),
+        Encoding.HEADER: (Encoding.HEADER, 2, False),
+        Encoding.LINEAR64: (Encoding.LINEAR64, 4, False),
+        Encoding.OCTET_RUN: (Encoding.OCTET_RUN, 2, True),
+        Encoding.SEXTET_RUN: (Encoding.SEXTET_RUN, 1, True),
+        Encoding.SEXTET_STREAM: (Encoding.SEXTET_STREAM, 1, False),
+        Encoding.TRIAD_STREAM: (Encoding.TRIAD_STREAM, 1, False)
+    }
+
+    result = bytearray()
+    encoding, cycle_length, is_run_encoding = encoding_properties[Encoding.HEADER]
+    cycle_count = 0
+
+    for char in content:
+        sextet = ord(char) - OFFSET
+        if cycle_length > 1 and cycle_count == 0:
+            holding_sextet = sextet
+        else:
+            if encoding == Encoding.HEADER:
+                encoding, cycle_length, is_run_encoding = encoding_properties[
+                        Encoding(holding_sextet & LOW_TRIAD_MASK)
+                ]
+                remaining_bytes = ((holding_sextet & HIGH_TRIAD_MASK) << 3) + sextet
+                holding_sextet = 0
+                cycle_count = -1
+            else:
+                if is_run_encoding:
+                    result.extend([(holding_sextet << 6) + sextet] * remaining_bytes)
+                    remaining_bytes = 1
+                elif encoding == Encoding.SEXTET_STREAM:
+                    result.append(sextet)
+                elif encoding == Encoding.TRIAD_STREAM:
+                    result.append(sextet & LOW_TRIAD_MASK)
+                    if remaining_bytes > 1:
+                        result.append((sextet & HIGH_TRIAD_MASK) >> 3)
+                        remaining_bytes -= 1
+                remaining_bytes -= 1
+                if not remaining_bytes:
+                    encoding, cycle_length, is_run_encoding = encoding_properties[Encoding.HEADER]
+                    cycle_count = -1
+        cycle_count = (cycle_count + 1) % cycle_length
+    return bytes(result)
 
 def distill(content):
     """ Strip out comments and whitespace from VariPacker content """
@@ -116,11 +161,11 @@ def encode_terminus():
 def _encode_linear64(content):
     result = []
     for content_index, byte in enumerate(content):
-        group_position = content_index % GROUP_LENGTH
+        group_position = content_index % LINEAR64_GROUP_LENGTH
         if not group_position:
             high_bits_index = len(result)
             result.append(0)
-        high_bits_shift = 2 * (GROUP_LENGTH - group_position)
+        high_bits_shift = 2 * (LINEAR64_GROUP_LENGTH - group_position)
         result[high_bits_index] += (byte & HIGH_BITS_MASK) >> high_bits_shift
         result.append(byte & SEXTET_MASK)
     return "".join([chr(byte + OFFSET) for byte in result])

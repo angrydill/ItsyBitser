@@ -256,3 +256,41 @@ def test_compare_different():
     content1 = clean_content[:20] + "Z " + clean_content[20:30] + "\r\n" + clean_content[30:]
     content2 = "#comment1\n" + clean_content[:40] + "# coment 2 \r\n" + clean_content[40:]
     assert varipacker.compare(content1, content2) == 20
+
+def test_decode_nothing():
+    content = varipacker.decode("")
+    assert content == b""
+
+def test_decode_terminus():
+    content = varipacker.decode("00")
+    assert content == b""
+
+def test_decode_sextet_stream():
+    content = "4801noon1000"
+    result = varipacker.decode(content)
+    assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00"
+
+def test_decode_triad_stream():
+    content = "388ng100"
+    result = varipacker.decode(content)
+    assert result == b"\x00\x01\x06\x07\x07\x06\x01\x00"
+
+def test_decode_triad_stream_odd_length():
+    content = "378ng100"
+    result = varipacker.decode(content)
+    assert result == b"\x00\x01\x06\x07\x07\x06\x01"
+
+def test_decode_sextet_and_triad_stream():
+    content = "4801noon10388ng14801noon10378ng100"
+    result = varipacker.decode(content)
+    assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00\x00\x01\x06\x07\x07\x06\x01\x00\x00\x01\x3e\x3f\x3f\x3e\x01\x00\x00\x01\x06\x07\x07\x06\x01"
+
+def test_decode_sextet_stream_and_run():
+    content = "4801noon10jon00"
+    result = varipacker.decode(content)
+    assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\x3e" * 511
+
+def test_decode_sextet_stream_and_octet_run():
+    content = "4801noon10173j00"
+    result = varipacker.decode(content)
+    assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\xfa" * 7
