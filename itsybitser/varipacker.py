@@ -9,6 +9,7 @@ HIGH_BITS_MASK = 0b11000000
 SEXTET_MASK = 0b00111111
 HIGH_TRIAD_MASK = 0b00111000
 LOW_TRIAD_MASK = 0b00000111
+LOW_DYAD_MASK = 0b00000011
 LINEAR64_GROUP_LENGTH = 3
 MAX_CHUNK_LENGTH = 511
 
@@ -63,22 +64,23 @@ def decode(content):
         else:
             if encoding == Encoding.HEADER:
                 encoding, cycle_length, is_run_encoding = encoding_properties[
-                        Encoding(holding_sextet & LOW_TRIAD_MASK)
+                    Encoding(holding_sextet & LOW_TRIAD_MASK)
                 ]
                 remaining_bytes = ((holding_sextet & HIGH_TRIAD_MASK) << 3) + sextet
                 holding_sextet = 0
                 cycle_count = -1
             else:
-                if is_run_encoding:
+                if is_run_encoding:   # SEXTET_RUN or OCTET_RUN
                     result.extend([(holding_sextet << 6) + sextet] * remaining_bytes)
                     remaining_bytes = 1
-                elif encoding == Encoding.SEXTET_STREAM:
-                    result.append(sextet)
                 elif encoding == Encoding.TRIAD_STREAM:
                     result.append(sextet & LOW_TRIAD_MASK)
                     if remaining_bytes > 1:
                         result.append((sextet & HIGH_TRIAD_MASK) >> 3)
                         remaining_bytes -= 1
+                else:   # SEXTET_STREAM or LINEAR64
+                    result.append(((holding_sextet & LOW_DYAD_MASK) << 6) + sextet)
+                    holding_sextet = holding_sextet >> 2
                 remaining_bytes -= 1
                 if not remaining_bytes:
                     encoding, cycle_length, is_run_encoding = encoding_properties[Encoding.HEADER]

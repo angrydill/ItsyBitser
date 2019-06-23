@@ -294,3 +294,29 @@ def test_decode_sextet_stream_and_octet_run():
     content = "4801noon10173j00"
     result = varipacker.decode(content)
     assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\xfa" * 7
+
+def test_decode_linear64_length1():
+    content = "713o00"
+    result = varipacker.decode(content)
+    assert result == b"\xff"
+
+def test_decode_linear64_length2():
+    content = "727og00"
+    result = varipacker.decode(content)
+    assert result == b"\xff\x77"
+
+def test_decode_linear64_length3():
+    content = "73WogZ00"
+    result = varipacker.decode(content)
+    assert result == b"\xff\x77\xaa"
+
+def test_decode_linear64_length4():
+    content = "74WogZ3n00"
+    result = varipacker.decode(content)
+    assert result == b"\xff\x77\xaa\xfe"
+
+def test_decode_sextet_stream_octet_run_and_linear64():
+    content = "4801noon10173j74WogZ3n00"
+    result = varipacker.decode(content)
+    assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\xfa" * 7 + b"\xff\x77\xaa\xfe"
+
