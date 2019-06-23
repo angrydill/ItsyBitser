@@ -320,3 +320,18 @@ def test_decode_sextet_stream_octet_run_and_linear64():
     result = varipacker.decode(content)
     assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\xfa" * 7 + b"\xff\x77\xaa\xfe"
 
+def test_decode_gap():
+    content = "0900"
+    result = varipacker.decode(content)
+    assert result == b"\x00" * 9
+
+def test_decode_santa_gap():
+    content = "hohoho00"
+    result = varipacker.decode(content)
+    assert result == b"\x00" * (511 * 3)
+
+def test_decode_gap_sextet_stream_octet_run_and_linear64():
+    content = "034801noon10173j74WogZ3n00"
+    result = varipacker.decode(content)
+    assert result == b"\x00\x00\x00\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\xfa" * 7 + b"\xff\x77\xaa\xfe"
+

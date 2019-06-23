@@ -69,6 +69,9 @@ def decode(content):
                 remaining_bytes = ((holding_sextet & HIGH_TRIAD_MASK) << 3) + sextet
                 holding_sextet = 0
                 cycle_count = -1
+                if encoding == Encoding.GAP:
+                    result.extend([0] * remaining_bytes)
+                    encoding, cycle_length, is_run_encoding = encoding_properties[Encoding.HEADER]
             else:
                 if is_run_encoding:   # SEXTET_RUN or OCTET_RUN
                     result.extend([(holding_sextet << 6) + sextet] * remaining_bytes)
