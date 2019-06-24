@@ -40,7 +40,6 @@ def compare(content1, content2):
 
 def decode(content):
     """ Decode binary data from VariPacker content (ASCII) """
-    # TODO write tests and implement
 
     encoding_properties = {
         #             (encoding, cycle length, is run encoding)
@@ -98,7 +97,8 @@ def distill(content):
 def encode(content):
     """ Encode binary content in VariPacker format (ASCII) """
 
-    # TODO optimize, then refactor
+    # TODO optimize (consider pre-switch (2) and post-swith (2) overhead as
+    # negative modifiers to min viable length), then refactor
     encoded_chunks = {}
     source_buffer = [byte for byte in content]
     source_buffer.append(None)   # Sentinal
@@ -122,16 +122,14 @@ def encode(content):
         for index, byte in enumerate(source_buffer):
             if byte is None or byte > value_limit:
                 chunk_finished = True
-            # If this is different from the last byte then the run is done
             elif is_run_encoding and source_chunk and byte != source_chunk[-1]:
+                # If this is different from the last byte then the run is done
                 chunk_finished = True
             else:
                 source_chunk.append(byte)
                 chunk_finished = len(source_chunk) >= MAX_CHUNK_LENGTH
             if chunk_finished:
                 chunk_length = len(source_chunk)
-                # TODO consider pre-switch (2) and post-swith (2) overhead
-                # as negative modifiers to min viable length
                 if chunk_length >= min_viable_length:
                     source_chunk = b"".join([bytes([byte]) for byte in source_chunk])
                     encoded_chunks[start_index] = encode_chunk(source_chunk, encoding)
