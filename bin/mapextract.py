@@ -24,16 +24,13 @@ def main(file_path):
     for cell_count, cell in enumerate(map_data):
         row = cell_count // width
         at_row_start = cell_count % width == 0
-        if at_row_start:
+        if at_row_start or len(line_buffer) == 16:
             if line_buffer:
                 print(" ".join(line_buffer))
                 line_buffer = []
-            #print("# Row {}{}".format(row, "." * 40))
-            print("# Row {:.<41}".format(row))
+            if at_row_start:
+                print("# Row {:.<41}".format(row))
         line_buffer.append(format(cell - 1, "02X"))  # Cells are 1-indexed, not 0
-        if len(line_buffer) == 16:
-            print(" ".join(line_buffer))
-            line_buffer = []
     if line_buffer:
         print(" ".join(line_buffer))
 
