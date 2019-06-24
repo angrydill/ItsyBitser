@@ -97,22 +97,25 @@ def distill(content):
 def encode(content):
     """ Encode binary content in VariPacker format (ASCII) """
 
-    # TODO optimize (consider pre-switch (2) and post-swith (2) overhead as
-    # negative modifiers to min viable length), then refactor
+    triad_stream_min_viable_length = 6
+    if content and max(content) <= 0x0f:
+        triad_stream_min_viable_length = 1
+
     encoded_chunks = {}
     source_buffer = [byte for byte in content]
-    source_buffer.append(None)   # Sentinal
+    source_buffer.append(None)   # Tail sentinel
 
     for encoding in (
             Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.TRIAD_STREAM,
             Encoding.SEXTET_STREAM, Encoding.LINEAR64
         ):
+
         value_limit, min_viable_length, is_run_encoding = {
             Encoding.LINEAR64: (0xff, 1, False),
             Encoding.OCTET_RUN: (0xff, 7, True),
-            Encoding.SEXTET_RUN: (0x3f, 6, True),
+            Encoding.SEXTET_RUN: (0x3f, 7, True),
             Encoding.SEXTET_STREAM: (0x3f, 14, False),
-            Encoding.TRIAD_STREAM: (0x07, 6, False)
+            Encoding.TRIAD_STREAM: (0x07, triad_stream_min_viable_length, False)
         }[encoding]
 
         source_chunk = []
@@ -174,6 +177,7 @@ def _encode_linear64(content):
     return "".join([chr(byte + OFFSET) for byte in result])
 
 def _encode_header(encoding, length):
+    #print ("# Encoding={};Length={}".format(encoding.name, length))
     result = (
         chr(encoding.value + length // RADIX * 8 + OFFSET) +
         chr((length & SEXTET_MASK) + OFFSET)
