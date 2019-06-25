@@ -140,20 +140,15 @@ def test_encode_gap_maximal():
     result = varipacker.encode_gap(511)
     assert result == "ho"
 
-def test_encode_terminus():
-    result = varipacker.encode_terminus()
-    assert result == "00"
-
 def test_encode_empty():
     result = varipacker.encode(b"")
-    assert result == varipacker.encode_terminus()
+    assert result == ""
 
 def test_encode_all_linear64_single_chunk():
     content = (b"\x40\x00\x00\x40" * 127) + b"\x40\x00\x00"
     result = varipacker.encode(content)
     assert result == "".join([
-        varipacker.encode_chunk(content, varipacker.Encoding.LINEAR64),
-        varipacker.encode_terminus()
+        varipacker.encode_chunk(content, varipacker.Encoding.LINEAR64)
     ])
 
 def test_encode_all_linear64_double_chunk():
@@ -161,16 +156,14 @@ def test_encode_all_linear64_double_chunk():
     result = varipacker.encode(content)
     assert result == "".join([
         varipacker.encode_chunk(content[0:511], varipacker.Encoding.LINEAR64),
-        varipacker.encode_chunk(content[0:511], varipacker.Encoding.LINEAR64),
-        varipacker.encode_terminus()
+        varipacker.encode_chunk(content[0:511], varipacker.Encoding.LINEAR64)
     ])
 
 def test_encode_all_sextet_run_single_chunk():
     content = b"\x39" * 511
     result = varipacker.encode(content)
     assert result == "".join([
-        varipacker.encode_chunk(content, varipacker.Encoding.SEXTET_RUN),
-        varipacker.encode_terminus()
+        varipacker.encode_chunk(content, varipacker.Encoding.SEXTET_RUN)
     ])
 
 def test_encode_all_sextet_run_double_chunk():
@@ -178,8 +171,7 @@ def test_encode_all_sextet_run_double_chunk():
     result = varipacker.encode(content)
     assert result == "".join([
         varipacker.encode_chunk(content[0:511], varipacker.Encoding.SEXTET_RUN),
-        varipacker.encode_chunk(content[0:511], varipacker.Encoding.SEXTET_RUN),
-        varipacker.encode_terminus()
+        varipacker.encode_chunk(content[0:511], varipacker.Encoding.SEXTET_RUN)
     ])
 
 def test_encode_alternating_sextet_octet_run():
@@ -189,8 +181,7 @@ def test_encode_alternating_sextet_octet_run():
         varipacker.encode_chunk(b"\x39" * 10, varipacker.Encoding.SEXTET_RUN),
         varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
         varipacker.encode_chunk(b"\x39" * 10, varipacker.Encoding.SEXTET_RUN),
-        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
-        varipacker.encode_terminus()
+        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN)
     ])
 
 def test_encode_sextet_octet_run_with_linear64():
@@ -202,8 +193,7 @@ def test_encode_sextet_octet_run_with_linear64():
         varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
         varipacker.encode_chunk(b"\x77", varipacker.Encoding.LINEAR64),
         varipacker.encode_chunk(b"\x39" * 10, varipacker.Encoding.SEXTET_RUN),
-        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
-        varipacker.encode_terminus()
+        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN)
     ])
 
 def test_encode_all_but_sextet_stream():
@@ -216,8 +206,7 @@ def test_encode_all_but_sextet_stream():
         varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
         varipacker.encode_chunk(b"\x77", varipacker.Encoding.LINEAR64),
         varipacker.encode_chunk(b"\x39" * 10, varipacker.Encoding.SEXTET_RUN),
-        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
-        varipacker.encode_terminus()
+        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN)
     ])
 
 def test_encode_all():
@@ -231,8 +220,7 @@ def test_encode_all():
         varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
         varipacker.encode_chunk(b"\x77", varipacker.Encoding.LINEAR64),
         varipacker.encode_chunk(b"\x39" * 10, varipacker.Encoding.SEXTET_RUN),
-        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN),
-        varipacker.encode_terminus()
+        varipacker.encode_chunk(b"\x40" * 10, varipacker.Encoding.OCTET_RUN)
     ])
 
 def test_distill_whitespace():
@@ -261,77 +249,73 @@ def test_decode_nothing():
     content = varipacker.decode("")
     assert content == b""
 
-def test_decode_terminus():
-    content = varipacker.decode("00")
-    assert content == b""
-
 def test_decode_sextet_stream():
-    content = "4801noon1000"
+    content = "4801noon10"
     result = varipacker.decode(content)
     assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00"
 
 def test_decode_triad_stream():
-    content = "388ng100"
+    content = "388ng1"
     result = varipacker.decode(content)
     assert result == b"\x00\x01\x06\x07\x07\x06\x01\x00"
 
 def test_decode_triad_stream_odd_length():
-    content = "378ng100"
+    content = "378ng1"
     result = varipacker.decode(content)
     assert result == b"\x00\x01\x06\x07\x07\x06\x01"
 
 def test_decode_sextet_and_triad_stream():
-    content = "4801noon10388ng14801noon10378ng100"
+    content = "4801noon10388ng14801noon10378ng1"
     result = varipacker.decode(content)
     assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00\x00\x01\x06\x07\x07\x06\x01\x00\x00\x01\x3e\x3f\x3f\x3e\x01\x00\x00\x01\x06\x07\x07\x06\x01"
 
 def test_decode_sextet_stream_and_run():
-    content = "4801noon10jon00"
+    content = "4801noon10jon"
     result = varipacker.decode(content)
     assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\x3e" * 511
 
 def test_decode_sextet_stream_and_octet_run():
-    content = "4801noon10173j00"
+    content = "4801noon10173j"
     result = varipacker.decode(content)
     assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\xfa" * 7
 
 def test_decode_linear64_length1():
-    content = "713o00"
+    content = "713o"
     result = varipacker.decode(content)
     assert result == b"\xff"
 
 def test_decode_linear64_length2():
-    content = "727og00"
+    content = "727og"
     result = varipacker.decode(content)
     assert result == b"\xff\x77"
 
 def test_decode_linear64_length3():
-    content = "73WogZ00"
+    content = "73WogZ"
     result = varipacker.decode(content)
     assert result == b"\xff\x77\xaa"
 
 def test_decode_linear64_length4():
-    content = "74WogZ3n00"
+    content = "74WogZ3n"
     result = varipacker.decode(content)
     assert result == b"\xff\x77\xaa\xfe"
 
 def test_decode_sextet_stream_octet_run_and_linear64():
-    content = "4801noon10173j74WogZ3n00"
+    content = "4801noon10173j74WogZ3n"
     result = varipacker.decode(content)
     assert result == b"\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\xfa" * 7 + b"\xff\x77\xaa\xfe"
 
 def test_decode_gap():
-    content = "0900"
+    content = "09"
     result = varipacker.decode(content)
     assert result == b"\x00" * 9
 
 def test_decode_santa_gap():
-    content = "hohoho00"
+    content = "hohoho"
     result = varipacker.decode(content)
     assert result == b"\x00" * (511 * 3)
 
 def test_decode_gap_sextet_stream_octet_run_and_linear64():
-    content = "034801noon10173j74WogZ3n00"
+    content = "034801noon10173j74WogZ3n"
     result = varipacker.decode(content)
     assert result == b"\x00\x00\x00\x00\x01\x3e\x3f\x3f\x3e\x01\x00" + b"\xfa" * 7 + b"\xff\x77\xaa\xfe"
 

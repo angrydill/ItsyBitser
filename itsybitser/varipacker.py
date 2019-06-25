@@ -140,7 +140,7 @@ def encode(content):
                 source_chunk = []
                 chunk_finished = False
     result = "".join([chunk for (_, chunk) in sorted(encoded_chunks.items())])
-    return result + encode_terminus()
+    return result
 
 def encode_chunk(content, encoding):
     """ Encodes a byte sequence using specified encoding  """
@@ -156,10 +156,6 @@ def encode_chunk(content, encoding):
 def encode_gap(length):
     """ Encodes instruction for decoder to skip forward length bytes """
     return _encode_header(Encoding.GAP, length)
-
-def encode_terminus():
-    """ Encodes indicator that there are no more chunks to decode """
-    return "00"
 
 def _encode_linear64(content):
     result = []
