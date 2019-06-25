@@ -97,13 +97,10 @@ def distill(content):
 def encode(content):
     """ Encode binary content in VariPacker format (ASCII) """
 
-    triad_stream_min_viable_length = 6
-    if content and max(content) <= 0x0f:
-        triad_stream_min_viable_length = 1
-
     encoded_chunks = {}
     source_buffer = [byte for byte in content]
     source_buffer.append(None)   # Tail sentinel
+    all_triads = content and max(content) <= 0x0f
 
     for encoding in (
             Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.TRIAD_STREAM,
@@ -112,10 +109,10 @@ def encode(content):
 
         value_limit, min_viable_length, is_run_encoding = {
             Encoding.LINEAR64: (0xff, 1, False),
-            Encoding.OCTET_RUN: (0xff, 7, True),
-            Encoding.SEXTET_RUN: (0x3f, 7, True),
+            Encoding.OCTET_RUN: (0xff, 13 if all_triads else 7, True),
+            Encoding.SEXTET_RUN: (0x3f, 11 if all_triads else 6, True),
             Encoding.SEXTET_STREAM: (0x3f, 14, False),
-            Encoding.TRIAD_STREAM: (0x07, triad_stream_min_viable_length, False)
+            Encoding.TRIAD_STREAM: (0x07, 1 if all_triads else 6, False)
         }[encoding]
 
         source_chunk = []
