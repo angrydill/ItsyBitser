@@ -100,7 +100,7 @@ def encode(content):
     encoded_chunks = {}
     source_buffer = [byte for byte in content]
     source_buffer.append(None)   # Tail sentinel
-    all_triads = content and max(content) <= 0x0f
+    all_triads = content and max(content) <= LOW_TRIAD_MASK
 
     for encoding in (
             Encoding.SEXTET_RUN, Encoding.OCTET_RUN, Encoding.TRIAD_STREAM,
