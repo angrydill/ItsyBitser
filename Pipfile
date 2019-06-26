@@ -10,5 +10,6 @@ pytest-cov = "*"
 
 [packages]
 itsybitser = {editable = true,path = "."}
+pypng = "*"
 
 [requires]
