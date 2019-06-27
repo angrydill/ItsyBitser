@@ -20,19 +20,24 @@ class GlyphSet:
         self._mono_content = []
 
         for row in rgb_content:
-            #print("".join([["  ", "[]"][sum(row[i:i+RGB_LENGTH]) > BLACK_THRESHOLD] for i in range(0, RGB_LENGTH * width, RGB_LENGTH)]))
-            self._mono_content.append([int(sum(row[i:i+RGB_LENGTH]) > BLACK_THRESHOLD) for i in range(0, RGB_LENGTH * width, RGB_LENGTH)])
+            self._mono_content.append([
+                int(sum(row[i:i+RGB_LENGTH]) > BLACK_THRESHOLD)
+                for i in range(0, RGB_LENGTH * width, RGB_LENGTH)
+            ])
 
     def render(self):
-        print(self._ascii_render_glyph(7))
-        #print(repr(self._get_glyph_content(5)))
-        #print("rows={}, cols={}".format(self.rows, self.columns))
+        for glyph_index in range(0, self.rows * self.columns):
+            print(self._render_glyph(glyph_index))
 
-    def _ascii_render_glyph(self, glyph_index):
+    def _render_glyph(self, glyph_index):
         ascii_rows = []
+        hex_bytes = []
         for row in self._get_glyph_content(glyph_index):
+            hex_bytes.append(format(int("".join([str(pixel) for pixel in row]), 2), "02X"))
             ascii_rows.append("".join([["  ", "[]"][pixel] for pixel in row]))
-        return "\n".join(ascii_rows)
+        body =  "\n".join(["{} # {}".format(pair[0], pair[1]) for pair in zip(hex_bytes, ascii_rows)])
+        head = "{:#^21}".format(" Glyph " + str(glyph_index) + " ")
+        return "{}\n{}\n".format(head, body)
 
     def _get_glyph_origin(self, glyph_index):
         start_row = glyph_index // self.columns
