@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """ Extract 8x8 monochrome glyphs from a PNG-format "sprite atlas" file """
 
-import sys
 import argparse
 import png
 
@@ -15,7 +14,7 @@ class GlyphSet:
     def __init__(self, png_file):
         reader = png.Reader(file=png_file)
         width, height, rgb_content, _ = reader.asRGB8()
-        
+
         self.rows = height // GLYPH_HEIGHT
         self.columns = width // GLYPH_WIDTH
         self._mono_content = []
@@ -40,7 +39,10 @@ class GlyphSet:
         for row in self._get_glyph_content(glyph_index):
             hex_bytes.append(format(int("".join([str(pixel) for pixel in row]), 2), "02X"))
             ascii_rows.append("".join([["  ", "[]"][pixel] for pixel in row]))
-        body =  "\n".join(["{} # {}".format(pair[0], pair[1]) for pair in zip(hex_bytes, ascii_rows)])
+        body = "\n".join([
+            "{} # {}".format(pair[0], pair[1])
+            for pair in zip(hex_bytes, ascii_rows)
+        ])
         head = "{:#^21}".format(" Glyph " + str(glyph_index) + " ")
         return "{}\n{}\n".format(head, body)
 
@@ -50,8 +52,11 @@ class GlyphSet:
         return (start_column * GLYPH_WIDTH, start_row * GLYPH_HEIGHT)
 
     def _get_glyph_content(self, glyph_index):
-        x, y = self._get_glyph_origin(glyph_index)
-        glyph_content = [row[x:x+GLYPH_WIDTH] for row in self._mono_content[y:y + GLYPH_HEIGHT]]
+        x_pos, y_pos = self._get_glyph_origin(glyph_index)
+        glyph_content = [
+            row[x_pos:x_pos+GLYPH_WIDTH]
+            for row in self._mono_content[y_pos:y_pos + GLYPH_HEIGHT]
+        ]
         return glyph_content
 
 def main():
@@ -66,7 +71,7 @@ def main():
     parser.add_argument(
         "-p",
         "--glyph-positions",
-        metavar = "n",
+        metavar="n",
         type=int, nargs="+",
         help="Relative position(s) (starting with 0) of glyph(s) to extract (default is all)"
     )
