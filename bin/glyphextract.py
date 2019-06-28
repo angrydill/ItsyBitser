@@ -2,6 +2,7 @@
 """ Extract 8x8 monochrome glyphs from a PNG-format "sprite atlas" file """
 
 import sys
+import argparse
 import png
 
 BLACK_THRESHOLD = 64
@@ -11,8 +12,8 @@ RGB_LENGTH = 3
 
 class GlyphSet:
 
-    def __init__(self, file_path):
-        reader = png.Reader(filename=file_path)
+    def __init__(self, png_file):
+        reader = png.Reader(file=png_file)
         width, height, rgb_content, _ = reader.asRGB8()
         
         self.rows = height // GLYPH_HEIGHT
@@ -25,9 +26,13 @@ class GlyphSet:
                 for i in range(0, RGB_LENGTH * width, RGB_LENGTH)
             ])
 
-    def render(self):
-        for glyph_index in range(0, self.rows * self.columns):
-            print(self._render_glyph(glyph_index))
+    def render(self, glyph_indexes=None):
+        rendered_glyphs = []
+        if glyph_indexes is None:
+            glyph_indexes = list(range(0, self.rows * self.columns))
+        for glyph_index in glyph_indexes:
+            rendered_glyphs.append(self._render_glyph(glyph_index))
+        return "\n".join(rendered_glyphs)
 
     def _render_glyph(self, glyph_index):
         ascii_rows = []
@@ -49,14 +54,26 @@ class GlyphSet:
         glyph_content = [row[x:x+GLYPH_WIDTH] for row in self._mono_content[y:y + GLYPH_HEIGHT]]
         return glyph_content
 
-def main(file_path):
-    glyphset = GlyphSet(file_path)
-    glyphset.render()
+def main():
+    parser = argparse.ArgumentParser(
+        description="Extracts 8x8 monochrome glyphs from a PNG-format \"sprite atlas\" file"
+    )
+    parser.add_argument(
+        dest="png_file",
+        type=argparse.FileType("rb"),
+        help="Name of .png file to extract from"
+    )
+    parser.add_argument(
+        "-p",
+        "--glyph-positions",
+        metavar = "n",
+        type=int, nargs="+",
+        help="Relative position(s) (starting with 0) of glyph(s) to extract (default is all)"
+    )
+
+    args = parser.parse_args()
+    glyphset = GlyphSet(args.png_file)
+    print(glyphset.render(args.glyph_positions))
 
 if __name__ == "__main__":
-    try:
-        file_path = sys.argv[1]
-    except IndexError:
-        print("Usage: {} <filename>".format(sys.argv[0]))
-        exit(1)
-    main(file_path)
+    main()
