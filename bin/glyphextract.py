@@ -10,6 +10,7 @@ GLYPH_HEIGHT = 8
 RGB_LENGTH = 3
 
 class GlyphSet:
+    """ Represents monochrome glyphs extracted from a PNG file """
 
     def __init__(self, png_file):
         reader = png.Reader(file=png_file)
@@ -25,15 +26,32 @@ class GlyphSet:
                 for i in range(0, RGB_LENGTH * width, RGB_LENGTH)
             ])
 
-    def render(self, glyph_indexes=None):
+    def render_glyphs(self, glyph_indexes=None):
+        """ Renders a list of glyphs (or all glyphs)
+
+        Renders glyphs indicated by the provided list of integers, or all
+        glyphs in the PNG file (if glyph_indexes is omitted), in hextream
+        format which can then be encoded into ASCII using varipack.
+
+        The resulting hextream has comments containing an ASCII rendering
+        of the glyphs, for easier identification.
+        """
         rendered_glyphs = []
         if glyph_indexes is None:
             glyph_indexes = list(range(0, self.rows * self.columns))
         for glyph_index in glyph_indexes:
-            rendered_glyphs.append(self._render_glyph(glyph_index))
+            rendered_glyphs.append(self.render_glyph(glyph_index))
         return "\n".join(rendered_glyphs)
 
-    def _render_glyph(self, glyph_index):
+    def render_glyph(self, glyph_index):
+        """ Renders a specified glyph
+
+        Renders glyph indicated by the provided index in hextream
+        format which can then be encoded into ASCII using varipack.
+
+        The resulting hextream has comments containing an ASCII rendering
+        of the glyph, for easier identification.
+        """
         ascii_rows = []
         hex_bytes = []
         for row in self._get_glyph_content(glyph_index):
@@ -46,11 +64,6 @@ class GlyphSet:
         head = "{:#^21}".format(" Glyph " + str(glyph_index) + " ")
         return "{}\n{}\n".format(head, body)
 
-    def _get_glyph_origin(self, glyph_index):
-        start_row = glyph_index // self.columns
-        start_column = glyph_index % self.columns
-        return (start_column * GLYPH_WIDTH, start_row * GLYPH_HEIGHT)
-
     def _get_glyph_content(self, glyph_index):
         x_pos, y_pos = self._get_glyph_origin(glyph_index)
         glyph_content = [
@@ -59,7 +72,24 @@ class GlyphSet:
         ]
         return glyph_content
 
+    def _get_glyph_origin(self, glyph_index):
+        start_row = glyph_index // self.columns
+        start_column = glyph_index % self.columns
+        return (start_column * GLYPH_WIDTH, start_row * GLYPH_HEIGHT)
+
 def main():
+    """ Process command line arguments and use GlyphSet to render selected glyphs """
+
+    def comma_range_list(arg):
+        result = []
+        for comma_range in arg.split(","):
+            extents = comma_range.split("-")
+            if len(extents) > 1:
+                result.extend(range(int(extents[0]), int(extents[1]) + 1))
+            else:
+                result.append(int(extents[0]))
+        return result
+
     parser = argparse.ArgumentParser(
         description="Extracts 8x8 monochrome glyphs from a PNG-format \"sprite atlas\" file"
     )
@@ -71,14 +101,15 @@ def main():
     parser.add_argument(
         "-p",
         "--glyph-positions",
-        metavar="n",
-        type=int, nargs="+",
+        metavar="n,n-n,n,n,n-n",
+        type=comma_range_list,
+        #nargs=1,
         help="Relative position(s) (starting with 0) of glyph(s) to extract (default is all)"
     )
 
     args = parser.parse_args()
     glyphset = GlyphSet(args.png_file)
-    print(glyphset.render(args.glyph_positions))
+    print(glyphset.render_glyphs(args.glyph_positions))
 
 if __name__ == "__main__":
     main()
