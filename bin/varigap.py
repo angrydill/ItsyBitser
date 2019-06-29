@@ -5,6 +5,8 @@ import argparse
 from itsybitser import varipacker
 
 def main():
+    """ Program entry point """
+
     parser = argparse.ArgumentParser(
         description="Creates a Varipacker-format \"gap\" chunk"
     )
