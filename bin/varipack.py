@@ -6,6 +6,7 @@ import argparse
 from itsybitser import hextream, varipacker
 
 def main():
+    """ Program entry point """
 
     parser = argparse.ArgumentParser(
         description="Packs/unpacks Hextream content to/from the Varipacker format"
