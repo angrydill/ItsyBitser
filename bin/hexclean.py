@@ -22,7 +22,7 @@ def main():
     hex_content = args.infile.read()
     binary_content = hextream.decode(hex_content)
     hex_content = hextream.encode(binary_content)
-    print(hex_content)
+    args.outfile.write(hex_content)
 
 if __name__ == "__main__":
     main()
