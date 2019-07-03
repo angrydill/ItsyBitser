@@ -43,11 +43,16 @@ def main():
         type=column_definition_list,
         help="columns to extract; heading is column heading (line 1), width is in bytes"
     )
+    parser.add_argument(
+        "-m", "--comment", default="",
+        type=str,
+        help="Comment string to include at beginning of file"
+    )
     args = parser.parse_args()
 
-    extract_csv_content(args.infile, args.outfile, args.columns)
+    extract_csv_content(args.infile, args.outfile, args.columns, args.comment)
 
-def extract_csv_content(infile, outfile, columns):
+def extract_csv_content(infile, outfile, columns, comment):
     """ Extract the content, transform, and write to the output file """
 
     hex_content = []
@@ -74,7 +79,9 @@ def extract_csv_content(infile, outfile, columns):
             hex_format = "0{}X".format(width)
             line_content.extend(reversed(textwrap.wrap(format(value, hex_format), 2)))
         hex_content.append(" ".join(line_content))
-    hex_content = "\n".join(hex_content) + "\n"
+    if comment:
+        comment = "# {}\n".format(comment)
+    hex_content = "{}{}\n".format(comment, "\n".join(hex_content))
     outfile.write(hex_content)
 
 if __name__ == "__main__":
