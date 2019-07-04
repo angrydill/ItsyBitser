@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ Extract 8x8 monochrome glyphs from a PNG-format "sprite atlas" file """
 
+import sys
 import argparse
 from itsybitser.glyphset import GlyphSet
 
@@ -21,9 +22,14 @@ def main():
         description="Extracts 8x8 monochrome glyphs from a PNG-format \"sprite atlas\" file"
     )
     parser.add_argument(
-        dest="png_file",
+        dest="infile",
         type=argparse.FileType("rb"),
         help="Name of .png file to extract from"
+    )
+    parser.add_argument(
+        dest="outfile", default=sys.stdout, nargs="?",
+        type=argparse.FileType("w", encoding="UTF-8"),
+        help="Name of file in which to write extracted glyph data"
     )
     parser.add_argument(
         "-p",
@@ -35,8 +41,8 @@ def main():
     )
 
     args = parser.parse_args()
-    glyphset = GlyphSet(args.png_file)
-    print(glyphset.render_glyphs(args.glyph_positions))
+    glyphset = GlyphSet(args.infile)
+    args.outfile.write(glyphset.render_glyphs(args.glyph_positions) + "\n")
 
 if __name__ == "__main__":
     main()
