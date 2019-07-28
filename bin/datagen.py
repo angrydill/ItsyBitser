@@ -27,9 +27,9 @@ def main():
     width = args.width
 
     try:
-        template, line_start, overhead = {
-            "std": ("{} DATA \"{}\"\n", 1, 9),
-            "tbx": ("{}D.{}\n", 0, 3),
+        template, overhead = {
+            "std": ("DATA \"{}\"\n", 7),
+            "tbx": ("D.{}\n", 2),
         }[args.basic_type]
     except KeyError:
         sys.stderr.write(
@@ -39,10 +39,7 @@ def main():
 
     source_content = varipacker.distill(args.infile.read())
     wrapped_content = textwrap.wrap(source_content, width=(width - overhead))
-    output_content = [
-        template.format(line_count + line_start, line)
-        for line_count, line in enumerate(wrapped_content)
-    ]
+    output_content = [template.format(line) for line in wrapped_content]
     args.outfile.writelines(output_content)
 
 if __name__ == "__main__":
