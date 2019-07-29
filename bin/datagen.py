@@ -38,7 +38,12 @@ def main():
         exit(1)
 
     source_content = varipacker.distill(args.infile.read())
-    wrapped_content = textwrap.wrap(source_content, width=(width - overhead))
+    width -= overhead
+    wrapped_content = []
+    partial_line_length = len(source_content) % width
+    if partial_line_length:
+        wrapped_content.append(source_content[:partial_line_length])
+    wrapped_content.extend(textwrap.wrap(source_content[partial_line_length:], width=width))
     output_content = [template.format(line) for line in wrapped_content]
     args.outfile.writelines(output_content)
 
