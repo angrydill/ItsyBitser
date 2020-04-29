@@ -37,8 +37,8 @@ Tools to assist development of tiny programs on resource-constrained platforms (
   * Chunk Payload - zero or more data bytes for the chunk
   * Chunk Encodings  (all are compressive, except Linear64 which is 4/3 expansive, and SextetStream which is neutral)
     * OctetStream a/k/a Linear64 – Encodes 3 bytes using 4 printable characters (i.e. has a cycle length of 4).  This is equivalent to Base64 encoding, but uses a character range and packing layout intended to make it easier to decode in Basic (i.e. uses minimal bit manipulation, no translation table required, no special cases for input length mod 3 ≠ 0).
-    * SextetStream – This packs a 6-bit value into each character (i.e. has a cycle length of 1).  This is more efficient than Linear64 for storing byte values that don’t exceed 64, such as the table of entity relationships.
-    * TriadStream – This packs two 3-bit values into each character (i.e. has a cycle length of 1).  This is much more efficient than Linear64 or even SextextStream for storing the base map (i.e. the map with only the common entities; none of the unique ones), as it is composed of just 8 entities (0-7).
+    * SextetStream – This packs a 6-bit value into each character (i.e. has a cycle length of 1).  This is more efficient than Linear64 for storing byte values that don’t exceed 64
+    * TriadStream – This packs two 3-bit values into each character (i.e. has a cycle length of 1).  This is much more efficient than Linear64 or even SextextStream for storing small byte values in the range 0 through 7
     * OctetRun – This is a run-length encoding of n repetitions of the byte represented by the 2-character payload (cycle length of 2)
     * SextetRun – This is a run-length encoding of n repetitions of the 6-bit value represented by the 1-character payload (cycle length of 1)
     * Header – An encoding that is always used for chunk headers, and never for payloads.  It encodes the three bits of the Chunk Type field and nine bits of the Length field into two printable characters (i.e. has a cycle length of 2).
