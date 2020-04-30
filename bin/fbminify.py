@@ -6,7 +6,7 @@ import re
 from enum import Enum
 import argparse
 
-MAX_LINE_LEN = 255
+DEFAULT_MAX_LINE_WIDTH = 255
 # The following encoding (basically an extension of Latin-1 typically
 # associated with MS Windows) was chosen as it has a usable character
 # glyph at 9b hex (ATASCII line feed). Note that UniCode and many others
@@ -84,15 +84,17 @@ def main():
     parser.add_argument('outfile', nargs='?', type=argparse.FileType('w', encoding=ENCODING),
                         help="Name of file in which to write the minified content",
                         default=sys.stdout)
+    parser.add_argument('-w', '--width', type=int, metavar='width', default=DEFAULT_MAX_LINE_WIDTH,
+                        help='Maximum line width of the generated source code')
     args = parser.parse_args()
-    minify(args.infile, args.outfile)
+    minify(args.infile, args.outfile, args.width)
 
-def minify(infile, outfile):
+def minify(infile, outfile, max_width):
     """ Abbreviate and compact code to fit as few as possible lines """
 
     source = infile.read()
     statement_list = scan_for_statements(source)
-    line_list = build_output_line_list(statement_list)
+    line_list = build_output_line_list(statement_list, max_width)
     outfile.write(ATASCII_LINEFEED.join(line_list))
 
 def scan_for_statements(source):
@@ -160,14 +162,14 @@ def scan_for_statements(source):
                 state = ScanState.NEUTRAL
     return statement_list
 
-def build_output_line_list(statement_list):
+def build_output_line_list(statement_list, max_width):
     """ build lines of code with statments separated by colons """
     line_list = []
     line = ""
     for statement in statement_list:
         if line:
             candidate_line = line + ":" + statement
-            if len(candidate_line) > MAX_LINE_LEN:
+            if len(candidate_line) > max_width:
                 line_list.append(line)
                 line = statement
             else:
