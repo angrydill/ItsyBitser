@@ -3,6 +3,18 @@ Tools to assist development of tiny programs on resource-constrained platforms (
 
 **NOTE**: Code is currently in a pre-alpha state, there are a number of known bugs and limitations.
 
+## Getting Started
+This set of (Python-based) utilities uses [Pipenv](https://pipenv.pypa.io/en/latest/)
+to handle dependencies.  You may need to install it if not already present on you system.
+The following command should install it:
+
+    pip3 install --user pipenv
+
+Before using the utilities, you must activate the virtual environment created by Pipenv. To do
+so, `cd` into the ItsyBitser directory and type:
+
+    pipenv shell
+
 ## Summary of Utilities
 * **atasciipng.py**: Utility that renders an ATASCII text file as a PNG graphic, with native Atari 8-bit font
 * **csvextract.py**: Extract column(s) from CSV file and encode in Hextream format

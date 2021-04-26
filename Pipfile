@@ -4,12 +4,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pytest = "*"
-pylint = "*"
-pytest-cov = "*"
 
 [packages]
-itsybitser = {editable = true,path = "."}
+itsybitser = {editable = true, path = "."}
 pypng = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [requires]
